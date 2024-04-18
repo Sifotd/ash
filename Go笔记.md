@@ -1,5 +1,11 @@
 # **Go day 01 笔记**
 
+## 常见的问题
+
+#### var就是定义，不能使用：=
+
+#### expected error ,foundxx就是多了xx,需要改xx
+
 ## go语言环境搭建
 
 ### 下载
@@ -1494,6 +1500,491 @@ func main() {
 }
 
 //go语言中没有默认参数这个概念
+
+```
+
+## 函数定义和defer
+
+在一个命名的函数中不能够再声明命名函数
+
+### defer语句
+
+defer语句会将其后面跟随的语句进行延迟处理，在defer归属的函数即将返回时，将延迟处理的语句按defer定义的逆序进行执行，也就是说，先被defer的语句最后被执行，最后被defer的语句，最先被执行 
+
+```
+defer语句执行  返回值x
+               |
+               defer语句执行
+               |
+               返回值return
+```
+
+```
+package main
+
+import "fmt"
+//go语言的rentrun不是原子操作,分为多步
+//第一步 返回值赋值
+//第二步  真正的ret返回
+
+func deferdemo() {
+	fmt.Println("门前雪")
+	defer fmt.Println("嘿嘿嘿")
+	defer fmt.Println("love") //一个函数中可以有多个defer
+	fmt.Println("眼中人")        //多个defer语句按照先进后出的顺序执行
+}
+
+func main() {
+	deferdemo()
+}
+```
+
+### 函数进阶
+
+#### 变量的作用域
+
+函数中查找变量的顺序
+
+1 先在函数内部查找
+
+2 找不到就往函数外面查找，一直查找到全局
+
+##### 全局变量
+
+全局都可以使用
+
+##### 局部变量
+
+不能在函数外面使用
+
+### 函数类型和变量
+
+#### 定义函数类型
+
+```
+type calculation func (int int )int
+```
+
+定义了一个calculation类型，它是一种函数类型，这种函数接收两个int类型的参数并且返回一个int类型的返回值
+
+函数也可以作为参数的类型
+
+#### 函数也可以作为参数的类型
+
+```
+func f3(x func() int){
+代码段
+}
+```
+
+#### 函数还可以作为返回值
+
+```
+func f5(x func()int) func(int, int) int{
+代码段
+ret :=func (a,b int)int
+}
+```
+
+#### 匿名函数
+
+```
+var f1=func(x,y int){
+fmt.Println(x+y)
+}
+```
+
+一般用在函数内部
+
+#### 立即执行函数
+
+```
+func(x,y int){
+fmt.Println(x+y)
+fmt.Println("hello world")
+}(100,200)
+```
+
+
+
+### 闭包
+
+闭包指的是一个函数和与其相关的引用环境（引用另一个函数外部变量）而组合而成的实体，简单来说，闭包=函数+引用环境
+
+```
+package main
+
+//闭包
+import "fmt"
+
+func f1(f func()) {
+	fmt.Println("this is f1")
+	f()
+}
+
+func f2(x, y int) {
+	fmt.Println("this is f2")
+	fmt.Println(x + y)
+}
+
+//定义一个函数对f2进行闭包
+func f3(f func(x, y int), m, n int) func() {
+	temp := func() {
+		f(m, n)
+	}
+	return temp
+}
+func main() {
+	f4 := func() {
+		fmt.Println("this is f4")
+	}
+	f1(f4)
+	temp := f3(f2, 100, 200)
+	temp()
+}
+```
+
+### defer再讲解
+
+释放资源 解锁
+
+#### defer执行原理
+
+1 返回值赋值 2 defer 3 真的返回
+
+### 内置函数
+
+#### panic和recover
+
+panic可以在任何地方引发，recover只有在defer调用的函数中有用
+
+defer语句一定要在可能引发panic之前定义
+
+## 递归
+
+函数自己调用自己
+
+递归的本质就是逐级拆分，按照提示拆分
+
+```go
+package main
+
+import "fmt"
+
+//递归
+//递归一定要有明确的退出条件
+//递归适合处理 问题相同 ，问题规模越来越小的场景
+//函数自我调用
+
+//例子1
+//实现阶乘
+func jc(n int) (ret int) {
+	//对n进行判断 ，n>0进行递归运算
+	if n <= 1 {
+		return 1
+	}
+	ret = n * jc(n-1)
+	return ret
+}
+func main() {
+	var n int
+	fmt.Scan(&n)
+	sum := jc(n)
+	fmt.Println("阶乘是", sum)
+}
+```
+
+## 结构体
+
+go语言是强类型的，对变量有个确切的类型
+
+### 自定义类型和类型别名
+
+```go
+//type后面跟的是类型
+type myInt int //自定义类型
+type yourInt = int //类型别名
+func main(){
+    var n myInt
+    n=100
+    fmt.Println(n)
+    fmt.Printf("%T\n",n)
+    var m yourInt
+    m=100
+    fmt.Println(n)
+    fmt.Printf("%T\n",n)
+}
+```
+
+### 结构体定义
+
+使用type和struct关键字来定义结构体
+
+```go
+type 类型名 struct{
+    字段名 字段类型
+    字段名 字段类型
+}
+```
+
+```go
+package main
+
+import "fmt"
+
+//type后面跟的是类型
+// type myInt int     //自定义类型
+// type yourInt = int //类型别名
+
+type person struct {
+	name   string
+	age    int
+	gender string
+	hobby  []string
+}
+
+func main() {
+	// var n myInt = 100
+
+	// fmt.Println(n)
+	// fmt.Printf("%T\n", n)
+
+	// var m yourInt = 100
+
+	// fmt.Println(m)
+	// fmt.Printf("%T\n", m)
+
+	// var c rune = '雪'
+
+	// fmt.Println(c)
+	// fmt.Printf("%T\n", c)
+	var p person
+	p.name = "门前雪"
+	p.age = 18
+	p.gender = "男"
+	p.hobby = []string{"游戏", "骑车", "美食"}
+	fmt.Println(p)
+	//访问变量p的字段
+	fmt.Println(p.age)
+}
+
+```
+
+
+
+### 匿名结构体
+
+```go
+	var s struct {
+		name string
+		x    int
+		y    int
+	}
+	s.x = 18
+	s.name = "love"
+	fmt.Println(s)
+```
+
+### 结构体指针及其初始化
+
+```
+b:=a
+b存的是a的内存地址
+```
+
+```go
+package main
+
+import "fmt"
+
+//结构体是值类型
+type person struct {
+	name, gender string
+}
+
+func f(x person) { //go语言中函数传参永远是副本，传的是拷贝
+	x.gender = "女"
+}
+
+func f2(x *person) { //go语言中函数传参永远是副本，修改原变量需要指针
+	// (*x).gender = "女"
+	x.gender = "女" //语法糖，自动根据指针找到对应的变量
+}
+
+//创建指针类型结构体
+
+func main() {
+	var p person
+	p.gender = "男"
+	p.name = "松上霜"
+	f(p)
+	fmt.Println(p.gender)
+	fmt.Println(p.name)
+	f2(&p)
+	fmt.Println(p.gender) //女 f2改的是原本
+	//结构体指针1
+	var p2 = new(person)
+	fmt.Println(p2)
+	p2.name = "门前雪"
+	fmt.Printf("%p\n", p2)
+
+	//结构体指针2
+	var p3 = &person{
+		name:   "元帅",
+		gender: "男",
+	}
+	fmt.Printf("%#v\n", p3)
+	//使用值列表的形式初始化，值的顺序要和结构体定义时字段的顺序的一样
+	p4 := &person{
+		"门前雪",
+		"男",
+	}
+	fmt.Printf("%#v\n", p4)
+}
+
+```
+
+#### 初始化
+
+构造函数：返回一个结构体变量的函数
+
+```go
+package main
+
+import "fmt"
+
+//构造函数
+type person struct {
+	name string
+	age  int
+}
+
+//构造函数 ：约定成俗 用new 开头
+//返回的式结构体还是结构体指针
+//当结构体比较大的时候尽量使用结构体指针，减少程序的内存开销
+func newPerson(name string, age int) person {
+	return person{
+		name: name,
+		age:  age,
+	}
+}
+func main() {
+	p1 := newPerson("门前雪", 18)
+	p2 := newPerson("松上霜", 18)
+	fmt.Println(p1, p2)
+
+}
+```
+
+#### 方法和接收者
+
+go语言中的方法是一种作用于特定变量的函数，这种特定类型变量叫做接收者
+
+定义方式如下
+
+```
+func (接收者变量 接收者类型)方法名(参数列表)(返回参数){
+函数体
+}
+```
+
+
+
+```go
+package main
+
+import "fmt"
+
+//方法
+type dog struct {
+	name string
+}
+
+//构造函数
+func newDog(name string) dog {
+	return dog{
+		name: name,
+	}
+}
+
+//方法是作用于特定函数的函数
+//接收者表示的是具体类型方法变量，多用类型名字名首字母小写表示
+func (d dog) wang() { //(d dog) 指定函数调用
+	fmt.Printf("%s:汪汪汪~", d.name)
+}
+func main() {
+	var name []string = []string{"肖健", "周文洪", "靳俭凯", "肖登宇"}
+	var n int
+	fmt.Println("请输入0~3的数")
+	fmt.Scan(&n)
+	d1 := newDog(name[n])
+	d1.wang()
+}
+
+```
+
+##### 值接收者和指针接收者
+
+```go
+package main
+
+import "fmt"
+
+//方法
+// 标识符 变量名 函数名 类型名 方法名
+//go 语言中如果有标识符首字母大写的，就表示对外部可见（暴露的，公有的）
+type dog struct {
+	name string
+}
+type person struct {
+	name string
+	age  int
+}
+
+//构造函数
+func newDog(name string) dog {
+	return dog{
+		name: name,
+	}
+}
+
+func newPerson(name string, age int) person {
+	return person{
+		name: name,
+		age:  age,
+	}
+
+}
+
+//方法是作用于特定函数的函数
+//接收者表示的是具体类型方法变量，多用类型名字名首字母小写表示
+func (d dog) wang() { //(d dog) 指定函数调用
+	fmt.Printf("%s:汪汪汪~", d.name)
+}
+
+//使用值接收者 传拷贝值
+func (p person) guonian() {
+
+	p.age++
+	fmt.Println(p.age)
+}
+
+//使用指针接收者 传内存地址
+func (p *person) rgn() {
+	p.age++
+
+}
+
+func main() {
+	d1 := newDog("ssh")
+	d1.wang()
+
+	p1 := newPerson("门前雪", 18)
+	fmt.Println(p1.age)
+	p1.guonian()
+	p1.rgn()
+	fmt.Println(p1.age)
+}
 
 ```
 
