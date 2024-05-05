@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>首页</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+<header>
+    <nav>
+        {{ if .isLogin }}
+            <a href="/">{{ .User.Username }}</a> | <a href="/logout">登出</a>
+        {{ else }}
+            <a href="/login">登录</a> | <a href="/register">注册</a>
+        {{ end }}
+    </nav>
+</header>
+
+<main>
+    <h1>个人主页</h1>
+
+    <div class="article-list">
+        {{ range .data }}
+            <div class="article-block">
+                <h2><a href="/article/show/{{ .Id }}">{{ .Title }}</a></h2>
+                <p>{{ .Short }}</p>
+                <div class="meta">
+                    <span>发表于 {{ timeStr .CreateTime }}</span>
+                    <span>阅读 {{ .ReadCount }}</span>
+                </div>
+            </div>
+        {{ end }}
+    </div>
+
+    {{ if or .pageData.HasPrev .pageData.HasNext }}
+        <nav class="pagination">
+            {{ if .pageData.HasPrev }}
+                <a href="?page={{ .pageData.Prev }}">上一页</a>
+            {{ end }}
+            {{ if .pageData.HasNext }}
+                <a href="?page={{ .pageData.Next }}">下一页</a>
+            {{ end }}
+        </nav>
+    {{ end }}
+</main>
+
+<footer>
+    &copy; 2023 Your Website
+</footer>
+
+<script src="/static/js/script.js"></script>
+
+</body>
+</html>

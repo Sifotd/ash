@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ .title }}</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+<header>
+    <nav>
+        <a href="/">首页</a>
+    </nav>
+</header>
+
+<main>
+    <h1>{{ .title }}</h1>
+
+    <form action="/register" method="POST">
+        <label for="username">用户名:</label>
+        <input type="text" id="username" name="username" required>
+
+        <label for="password">密码:</label>
+        <input type="password" id="password" name="password" required>
+
+        <label for="repassword">确认密码:</label>
+        <input type="password" id="repassword" name="repassword" required>
+
+        <button type="submit">注册</button>
+    </form>
+
+    <!-- 添加“已有账号，立即登录”链接 -->
+    <p class="login-link">
+      已有账号？<a href="/login">立即登录</a>
+    </p>
+</main>
+
+<footer>
+    &copy; 2023 Your Website
+</footer>
+
+<script src="/static/js/script.js"></script>
+
+</body>
+</html>

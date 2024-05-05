@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>图片专辑</title>
+</head>
+<body>
+    {{if .isLogin}}
+        <!-- 用户已登录时的UI -->
+        <h1>欢迎，已登录用户！</h1>
+    {{else}}
+        <!-- 用户未登录时的UI -->
+        <h1>请<a href="/login">登录</a>以查看您的图片专辑。</h1>
+    {{end}}
+
+    <h2>上传图片到相册</h2>
+    <form action="/upload" method="POST" enctype="multipart/form-data">
+        <input type="file" name="upload" accept="image/jpeg, image/png, image/gif">
+        <button type="submit">上传</button>
+    </form>
+
+    <h2>已上传图片</h2>
+    <div>
+        {{range .albums}}
+            <img src="{{.Filepath}}" alt="{{.Filename}}" />
+            <p>{{.CreateTime}}</p>
+        {{end}}
+    </div>
+</body>
+</html>

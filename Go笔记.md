@@ -1988,3 +1988,432 @@ func main() {
 
 ```
 
+### 函数版学生管理系统
+
+```go
+package main
+
+import (
+	"fmt"
+	"os"
+)
+
+//学生管理系统（函数版）
+/*
+写一个系统，能够查看/新增/编辑/删除学生
+*/
+var (
+	allStudents = make(map[int64]*student, 50) //学号不重复，名字能重复，学号就是key
+
+)
+
+type student struct {
+	id   int64
+	name string
+}
+
+// nerStudents 是student类型的构造函数
+func nerStudents(id int64, name string) *student {
+	return &student{
+		id:   id,
+		name: name,
+	}
+}
+
+func showAllStudents() {
+	//把所有的学生都打印出来
+	for k, v := range allStudents {
+		fmt.Printf("学号：%d  姓名: %s", k, v.name)
+	}
+}
+
+func addNewStudents() {
+	//向all中添加学生
+	//创建一个新学生
+	//获取用户输入
+	var (
+		id   int64
+		name string
+	)
+	fmt.Printf("请输入学生的学号")
+	fmt.Scan(&id)
+	fmt.Printf("请输入学生的姓名")
+	fmt.Scan(&name)
+	//创造一个一个学生的变量
+	//然后追加到all中，调用构造函数
+	newStu := nerStudents(id, name)
+	allStudents[id] = newStu //追加，赋值就行
+}
+func deleteStudents() {
+	//请用户输入要删除的学生学号
+	var (
+		deleteID int64
+	)
+	fmt.Printf("请输入你要删除学生的学号:")
+	fmt.Scan(&deleteID)
+
+	//根据输入的键值对删除allStudents中的学生
+	delete(allStudents, deleteID)
+
+}
+func main() {
+	//allStudents = make(map[int64]*student, 50)
+	// 打印菜单
+	for {
+		fmt.Println("欢迎使用学生管理系统")
+		fmt.Println(`
+	1 查看所有学生
+	2 新增学生
+	3 删除学生
+	4 退出
+	`)
+
+		// 等待用户选择操作
+		fmt.Print("请输入对应序号以执行相应操作 :")
+		var choice int
+		fmt.Scan(&choice)
+		//反馈用户，输出用户的选择
+		fmt.Printf("您选择了%d选项\n", choice)
+
+		// 执行对应的函数
+		//先判断choice
+		switch choice {
+		case 1:
+			showAllStudents()
+		case 2:
+			addNewStudents()
+		case 3:
+			deleteStudents()
+		case 4:
+			os.Exit(1) //1表示退出的状态码
+		default:
+			fmt.Println("输入无效，请重新输入")
+		}
+	}
+}
+```
+
+### 结构体的匿名字段与字段结构体嵌套
+
+### 匿名字段
+
+结构体运行其成员字段在声明时没有字段名而只有类型，这种没有名字的字段就称为匿名字段
+
+```go
+package main
+
+import "fmt"
+
+//匿名字段
+
+type person struct {
+	string
+	int
+}
+
+func main() {
+	p1 := person{
+		"门前雪",
+		18,
+	}
+	fmt.Println(p1.int)
+	fmt.Println(p1.string)
+}
+
+```
+
+### 嵌套结构体和匿名结构体嵌套
+
+```go
+package main
+
+import "fmt"
+
+//嵌套结构体  把一个结构体嵌套在另一个结构体里面
+type address struct {
+	address string
+}
+type person struct {
+	name    string
+	age     int
+	address //匿名嵌套结构体
+}
+type company struct {
+	name    string
+	address address
+}
+
+func main() {
+	p1 := person{
+		name: "门前雪",
+		age:  18,
+		address: address{
+			address: "贵州省遵义市",
+		},
+	}
+	fmt.Println(p1.address.address)
+	fmt.Println(p1.address) //现在自己结构体寻找，找不到就在匿名结构体查找，匿名结构体有重复命名的，要写全
+
+}
+```
+
+### 结构体模拟实现继承
+
+go语言中使用结构体也可以实现其他编程语言中面向对象的继承
+
+```go
+package main
+
+import "fmt"
+
+//结构体模拟实现其他语言中的继承
+
+type animal struct {
+	name string
+}
+
+func (a animal) move() {
+	fmt.Println("%s会动", a.name)
+}
+
+type dog struct {
+	feet   uint8
+	animal //animal拥有的方法，dog此时也有了
+}
+
+func (d dog) wang() {
+	fmt.Println(" %s 汪汪汪", d.name)
+}
+func main() {
+	d1 := dog{
+		animal: animal{name: "小黑"},
+		feet:   4,
+	}
+	fmt.Println(d1)
+	d1.wang()
+	d1.move()
+```
+
+### 结构体与json
+
+```go
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+)
+
+//结构体与json
+
+// 1 序列化 把go语言中的结构体变量--->json格式的字符串
+// 2 反序列化 把 json格式的字符串 -->go语言能够识别的结构体变量
+type person struct {
+	Name string `json:"name" db:"name" ini:"name"` //首字母大写，才能被json解析
+	Age  int    `json:"age"`
+}
+
+func main() {
+
+	//序列化
+	p1 := person{
+		Name: "门前雪",
+		Age:  18,
+	}
+	b, err := json.Marshal(p1)
+	if err != nil {
+		fmt.Printf("marshale failed ,err :%v", err)
+		return
+	}
+	fmt.Printf("%v\n", string(b))
+
+	//反序列化
+	str := `{"name":"理想","age":18}`
+	var p2 person
+	json.Unmarshal([]byte(str), &p2) //传指针是为了能在函数内部修改p2的值
+	fmt.Printf("%#v\n", p2)
+}
+
+```
+
+## 接口（interface）
+
+接口是一种类型，是一种特殊的类型，它规定了变量有哪些方法
+
+在编程中会遇到以下场景
+
+我不关心一个变量是什么类型，我只关心能调用它的什么方法
+
+```go
+package main
+
+import (
+	"fmt"
+)
+
+//引出接口示例
+
+// 定义一个能叫的类型
+type speaker interface {
+	speak() //只要实现了speak方法，都能当做speak变量
+
+}
+
+// 定义一个car类型
+// 不管是什么结构体，只要有run方法都是car类型
+type car interface {
+	run()
+}
+type falali struct {
+	brand string
+}
+type baoshijie struct {
+	brand string
+}
+
+type cat struct{}
+
+type dog struct{}
+type person struct{}
+
+// 接收car类型
+func run(c car) {
+	c.run()
+}
+func (b baoshijie) run() {
+	fmt.Println("fafa")
+}
+func (f falali) run() {
+	fmt.Println("bbbb")
+}
+func (c cat) speak() {
+	fmt.Println("喵喵喵~")
+
+}
+func (d dog) speak() {
+	fmt.Println("汪汪汪~")
+}
+func (p person) speak() {
+	fmt.Println("啊啊啊~")
+}
+func da(x speaker) {
+	//接收一个参数，传进来什么，我就打什么
+	x.speak() //挨打了就要叫
+}
+func main() {
+	var c1 cat
+	var c2 dog
+	var p1 person
+
+	da(c1)
+	da(c2)
+	da(p1)
+
+	f1 := falali{
+		brand: "法拉利",
+	}
+	b1 := baoshijie{
+		brand: "保时捷",
+	}
+	run(f1)
+	run(b1)
+
+}
+
+```
+
+
+
+### 接口的定义与实现
+
+```go
+type 接口名 interface {
+    方法名1 （参数1，参数2）（返回值1，返回值2）
+    方法名2 （参数1，参数2）（返回值1，返回值2）
+}
+```
+
+用来给变量\参数\返回值等设置类型
+
+一个变量如果实现了接口中规定的所有方法，那么这个变量就实现了这个接口，可以称为这个接口类型的变量
+
+接口分为接口类型和接口值
+
+接口保存的分为两部分：值类型和值
+
+动态类型 动态值
+
+main.cat  cat{
+
+}
+
+这样就实现了接口变量能够存储不同的值
+
+### 接口类型变量
+
+```go
+package main
+
+import "fmt"
+
+type animal interface {
+	move()
+	eat(string)
+}
+type cat struct {
+	naem string
+	feet int8
+}
+type chicken struct {
+	feet int8
+}
+
+func (c chicken) move() {
+	fmt.Println("鸡你太美")
+}
+func (c chicken) eat(food string) {
+	fmt.Printf("吃 %s", food)
+}
+func (c cat) move() {
+	fmt.Println("走猫步")
+}
+func (c cat) eat(s string) {
+	fmt.Printf("吃 %s", s)
+	fmt.Println()
+}
+func main() {
+	var a1 animal //定义一个接口类型的变量
+	var b1 animal
+	mimi := cat{
+		naem: "咪咪",
+		feet: 4,
+	}
+	kfc := chicken{
+		feet: 4,
+	}
+	b1 = kfc
+	b1.eat("鸡饲料")
+	fmt.Println(b1)
+	a1 = mimi
+	a1.eat("肉")
+	fmt.Println(a1)
+
+}
+
+```
+
+
+
+#### 值接收者 指针接收者
+
+使用值接收者与使用值接收者的区别
+
+使用值接收者实现接口，结构体类型和结构体指针类型的变量都能存
+
+指针接收者实现接口智能存结构体指针类型的变量
+
+## 包
+
+
+
+## 文件操作
